@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7d123b"><title>REYNALD 💕🌹 — Online Lovers' Game</title>
+<style>
+:root{--pink:#ff5d91;--deep:#7d123b;--ink:#42172b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);background:radial-gradient(circle at top,#ffe1eb,#fff6f8 55%,#f9d7e3);min-height:100vh}
+.wrap{width:min(760px,100%);margin:auto;padding:16px 13px 32px}header{text-align:center;padding:18px 6px}.rose{font-size:40px}h1{font-size:clamp(27px,7vw,42px);margin:7px 0;color:var(--deep)}.subtitle{margin:0;color:#8d4562}
+.panel{background:#ffffffed;border:1px solid white;border-radius:22px;padding:19px;box-shadow:0 12px 35px #7d123b12;margin:13px 0}
+label{display:block;font-weight:750;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #efb7cb;border-radius:12px;background:#fffafd;color:var(--ink);font:inherit}textarea{min-height:105px;resize:vertical}
+button{font:inherit;font-weight:750;border:0;border-radius:13px;padding:12px 14px;cursor:pointer}.primary{background:linear-gradient(135deg,var(--deep),#c22d68);color:white}.secondary{background:#ffe0eb;color:var(--deep)}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.hidden{display:none!important}.small{font-size:13px;color:#89566b;line-height:1.5}.pill{display:inline-block;background:#ffe2ec;border-radius:99px;padding:7px 11px;font-size:12px;font-weight:800;color:var(--deep);margin:2px}.progress{height:8px;background:#f7d2df;border-radius:99px;overflow:hidden;margin:13px 0}.progress div{height:100%;background:linear-gradient(90deg,#ff6d9e,#a51c51);width:0}.category{font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:#bc3b70}.question{font-size:clamp(21px,5vw,29px);line-height:1.3;margin:12px 0}.answerbox{background:#fff4f8;border-radius:14px;padding:12px;margin:10px 0}.status{padding:11px;border-radius:12px;background:#fff0f5;margin:10px 0}.footer{text-align:center;font-size:12px;color:#a36b80;padding:10px}
+@media(max-width:460px){.panel{padding:15px}.row>*{min-width:100%}}
+</style>
+</head>
+<body><div class="wrap">
+<header><div class="rose">💕🌹</div><h1>REYNALD 💕🌹</h1><p class="subtitle">Two phones. One room. One love story.</p></header>
+
+<section id="configPanel" class="panel">
+<h2>⚙️ One-time setup</h2>
+<p>This version syncs both phones through Firebase. First, create a Firebase project and paste its web configuration below. You only need to do this once before hosting the page.</p>
+<ol class="small">
+<li>Open the <b>Firebase Console</b> and create a project.</li>
+<li>Add a Web app and copy its Firebase configuration.</li>
+<li>In Build → Realtime Database, create a database.</li>
+<li>In Authentication → Sign-in method, enable <b>Anonymous</b>.</li>
+<li>Paste the config fields below, then tap Save setup.</li>
+</ol>
+<label for="apiKey">apiKey</label><input id="apiKey" placeholder="Firebase apiKey">
+<label for="authDomain">authDomain</label><input id="authDomain" placeholder="your-project.firebaseapp.com">
+<label for="databaseURL">databaseURL</label><input id="databaseURL" placeholder="https://your-project-default-rtdb.region.firebasedatabase.app">
+<label for="projectId">projectId</label><input id="projectId" placeholder="your-project-id">
+<label for="appId">appId</label><input id="appId" placeholder="Firebase appId">
+<button class="primary" style="width:100%;margin-top:12px" onclick="saveConfig()">Save setup & connect 💗</button>
+<p id="configStatus" class="small"></p>
+<p class="small">Firebase web config is not a secret. Protect the database with authenticated rules and add Firebase App Check before sharing widely.</p>
+</section>
+
+<section id="startPanel" class="panel hidden">
+<h2>💌 Welcome, lovebirds</h2><p>Use the same game password and room code on both phones.</p>
+<label for="password">Game password</label><input id="password" type="password" placeholder="Enter game password">
+<label for="playerName">Your name</label><input id="playerName" maxlength="24" placeholder="LaBoss or Joicy">
+<div class="row"><button class="primary" onclick="createRoom()">Create new room 🌹</button><button class="secondary" onclick="showJoin()">Join a room 💞</button></div>
+<div id="joinBox" class="hidden"><label for="roomInput">Room code from your partner</label><input id="roomInput" maxlength="6" placeholder="6-character code" style="text-transform:uppercase"><button class="primary" style="width:100%;margin-top:10px" onclick="joinRoom()">Join room</button></div>
+<p id="startStatus" class="small" aria-live="polite"></p>
+</section>
+
+<section id="lobby" class="panel hidden">
+<div class="pill">ROOM CODE</div><h2 id="roomCodeDisplay" style="letter-spacing:5px;color:#7d123b"></h2>
+<p>Send this code to your partner. They open the same hosted website on their own phone and choose “Join a room”.</p>
+<div id="lobbyStatus" class="status">Waiting for your partner…</div>
+<label for="mode">Choose your question mood (room creator)</label><select id="mode">
+<option value="all">All moods 🎁</option><option value="heart">Deep & emotional ❤️</option><option value="funny">Funny & playful 😂</option><option value="flirty">Flirty & sweet 😘</option><option value="memories">Our memories 📸</option><option value="future">Dreams & future 💍</option><option value="truth">Honesty & trust 🤝</option><option value="challenge">Cute mini-challenges 🎯</option></select>
+<button id="beginBtn" class="primary" style="width:100%" onclick="beginGame()">Start together 💗</button>
+<p class="small">Be kind, take turns, and skip anything either person does not want to answer.</p>
+</section>
+
+<section id="gamePanel" class="panel hidden">
+<div class="row"><span id="turnPill" class="pill">Turn</span><span id="countPill" class="pill">Question</span></div>
+<div class="progress"><div id="bar"></div></div><div id="category" class="category"></div><div id="question" class="question"></div>
+<div id="answerArea"><label for="answer">Your answer</label><textarea id="answer" placeholder="Answer honestly, from your heart…"></textarea><button id="submitBtn" class="primary" style="width:100%;margin-top:10px" onclick="submitAnswer()">Send answer 💌</button></div>
+<div id="waitingArea" class="status hidden">Your answer is saved. Waiting for your partner… 💞</div>
+<div id="answers"></div><button class="secondary" style="width:100%;margin-top:10px" onclick="leaveRoom()">Leave room</button>
+</section>
+<div class="footer">REYNALD 💕🌹 · Shared-room multiplayer</div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, set, get, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const PASSWORD="JOICYLABOSS";
+const qs=[
+["heart","Deep & emotional ❤️","What is one thing about our connection that makes you feel truly loved?"],
+["heart","Deep & emotional ❤️","When life gets hard, what kind of support do you need most from me?"],
+["heart","Deep & emotional ❤️","What is something you wish I understood about your heart?"],
+["heart","Deep & emotional ❤️","What moment made you feel closest to me?"],
+["heart","Deep & emotional ❤️","What small thing I do means more to you than I realise?"],
+["funny","Funny & playful 😂","If our relationship were a Nollywood movie, what would the title be?"],
+["funny","Funny & playful 😂","Who is more dramatic when hungry, and what is the evidence?"],
+["funny","Funny & playful 😂","What funny habit of mine belongs in a relationship documentary?"],
+["funny","Funny & playful 😂","Who would survive longer in a zombie movie, and why? Keep it funny!"],
+["funny","Funny & playful 😂","What nickname would you give me to lovingly annoy me?"],
+["flirty","Flirty & sweet 😘","What little thing about me gives you butterflies?"],
+["flirty","Flirty & sweet 😘","Describe your ideal cute date with me in three details."],
+["flirty","Flirty & sweet 😘","What compliment from me can brighten your day?"],
+["flirty","Flirty & sweet 😘","If we had a whole day together with no plans, what would we do?"],
+["flirty","Flirty & sweet 😘","What song would you choose as our couple soundtrack?"],
+["memories","Our memories 📸","What was your honest first impression of me?"],
+["memories","Our memories 📸","Which memory of us would you love to relive for one more hour?"],
+["memories","Our memories 📸","What little moment between us still makes you smile?"],
+["future","Dreams & future 💍","What new experience do you hope we can share someday?"],
+["future","Dreams & future 💍","What does a peaceful, happy future together look like to you?"],
+["future","Dreams & future 💍","What personal dream do you want me to encourage you toward?"],
+["truth","Honesty & trust 🤝","When we disagree, what helps you feel heard instead of judged?"],
+["truth","Honesty & trust 🤝","What does loyalty mean to you in everyday actions?"],
+["truth","Honesty & trust 🤝","How can we discuss jealousy or insecurity without hurting each other?"],
+["truth","Honesty & trust 🤝","What healthy boundary helps you feel respected?"],
+["challenge","Cute mini-challenges 🎯","Give your partner three sincere compliments: character, effort, and a favourite memory."],
+["challenge","Cute mini-challenges 🎯","Make up a 10-second theme song for your relationship. Sing only if both feel comfortable!"],
+["challenge","Cute mini-challenges 🎯","Name five things you appreciate about each other—no repeating answers."],
+["challenge","Cute mini-challenges 🎯","Invent a secret couple handshake or friendly greeting together."],
+["challenge","Cute mini-challenges 🎯","Each plan one free or low-cost date the other would genuinely enjoy."]
+];
+let app,auth,db,uid,roomCode,myName,isHost=false,roomData=null,unsubscribe=null;
+const $=id=>document.getElementById(id);
+function cfg(){return {apiKey:$("apiKey").value.trim(),authDomain:$("authDomain").value.trim(),databaseURL:$("databaseURL").value.trim(),projectId:$("projectId").value.trim(),appId:$("appId").value.trim()}}
+function status(id,msg){$(id).textContent=msg}
+window.saveConfig=async()=>{
+ const c=cfg();if(Object.values(c).some(v=>!v)){status("configStatus","Please fill in every config field.");return}
+ localStorage.setItem("reynaldFirebaseConfig",JSON.stringify(c));await connect(c);
+};
+async function connect(c){
+ try{if(!app){app=initializeApp(c);auth=getAuth(app);db=getDatabase(app)}const cred=await signInAnonymously(auth);uid=cred.user.uid;
+ $("configPanel").classList.add("hidden");$("startPanel").classList.remove("hidden");status("startStatus","Connected successfully. You can create or join a room.");}
+ catch(e){status("configStatus","Connection failed: "+e.message+". Check config, Anonymous Auth, database URL, and rules.");}
+}
+const stored=localStorage.getItem("reynaldFirebaseConfig");if(stored){try{const c=JSON.parse(stored);for(const [k,v] of Object.entries(c))if($(k))$(k).value=v;connect(c)}catch{}}
+window.showJoin=()=>{$("joinBox").classList.remove("hidden")};
+function validPassword(){if($("password").value!==PASSWORD){status("startStatus","Incorrect password. Try again 💗");return false}myName=$("playerName").value.trim();if(!myName){status("startStatus","Please enter your name.");return false}return true}
+function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+window.createRoom=async()=>{
+ if(!validPassword()||!db)return;
+ roomCode=code();isHost=true;
+ const data={hostUid:uid,players:{[uid]:{name:myName}},status:"lobby",createdAt:Date.now()};
+ try{await set(ref(db,"rooms/"+roomCode),data);enterRoom();}catch(e){status("startStatus","Could not create room: "+e.message)}
+};
+window.joinRoom=async()=>{
+ if(!validPassword()||!db)return;const candidate=$("roomInput").value.trim().toUpperCase();
+ if(!/^[A-Z0-9]{6}$/.test(candidate)){status("startStatus","Enter the 6-character room code.");return}
+ try{const r=ref(db,"rooms/"+candidate),snap=await get(r);if(!snap.exists()){status("startStatus","Room not found. Check the code and try again.");return}
+ const d=snap.val();if(d.status!=="lobby"){status("startStatus","That game has already started.");return}
+ if(Object.keys(d.players||{}).length>=2&&!d.players[uid]){status("startStatus","This room already has two players.");return}
+ roomCode=candidate;isHost=false;await update(ref(db,"rooms/"+roomCode+"/players"),{[uid]:{name:myName}});enterRoom();
+ }catch(e){status("startStatus","Could not join: "+e.message)}
+};
+function enterRoom(){
+ $("startPanel").classList.add("hidden");$("lobby").classList.remove("hidden");$("roomCodeDisplay").textContent=roomCode;
+ if(unsubscribe)unsubscribe();
+ unsubscribe=onValue(ref(db,"rooms/"+roomCode),snap=>{if(!snap.exists()){status("lobbyStatus","Room closed.");return}roomData=snap.val();renderRoom()});
+}
+function renderRoom(){
+ const players=Object.values(roomData.players||{});status("lobbyStatus",players.length<2?"Waiting for your partner to join…":"Both players connected: "+players.map(p=>p.name).join(" 💕 "));
+ $("beginBtn").classList.toggle("hidden",!isHost||players.length<2);
+ if(roomData.status==="playing"){ $("lobby").classList.add("hidden");$("gamePanel").classList.remove("hidden");renderGame()}
+ if(roomData.status==="finished"){renderGame();$("question").textContent="You did it! 💕 Take time to talk about your answers."; $("answerArea").classList.add("hidden");$("waitingArea").classList.add("hidden")}
+}
+window.beginGame=async()=>{
+ if(!isHost||Object.keys(roomData.players||{}).length<2)return;
+ const mode=$("mode").value;let deck=qs.filter(q=>mode==="all"||q[0]===mode).sort(()=>Math.random()-.5);
+ await update(ref(db,"rooms/"+roomCode),{status:"playing",deck,index:0,turn:0,answers:{}});
+};
+function playersArray(){return Object.entries(roomData.players||{}).map(([id,p])=>({id,name:p.name}))}
+function renderGame(){
+ const deck=roomData.deck||[],i=roomData.index||0,ps=playersArray(),ans=roomData.answers||{};
+ if(i>=deck.length){if(isHost&&roomData.status!=="finished")update(ref(db,"rooms/"+roomCode),{status:"finished"});$("countPill").textContent="Finished";$("bar").style.width="100%";return}
+ const q=deck[i],turnUid=ps[(roomData.turn||0)%ps.length]?.id,turnName=roomData.players?.[turnUid]?.name||"Player";
+ $("turnPill").textContent="💗 "+turnName+"'s turn";$("countPill").textContent=`Question ${i+1} of ${deck.length}`;$("bar").style.width=(i/deck.length*100)+"%";
+ $("category").textContent=q[1];$("question").textContent=q[2];
+ const already=ans[i]&&ans[i][uid];const myTurn=turnUid===uid;
+ $("answerArea").classList.toggle("hidden",!myTurn||!!already);$("waitingArea").classList.toggle("hidden",!already);
+ $("answers").innerHTML="";
+ if(ans[i])Object.values(ans[i]).forEach(a=>{const box=document.createElement("div");box.className="answerbox";const title=document.createElement("b");title.textContent=a.name+" answered:";const body=document.createElement("p");body.textContent=a.text;box.append(title,body);$("answers").append(box)});
+}
+window.submitAnswer=async()=>{
+ const textVal=$("answer").value.trim();if(!textVal)return;
+ const snap=await get(ref(db,"rooms/"+roomCode));const d=snap.val();const i=d.index||0;const ps=Object.entries(d.players||{});
+ const turnUid=ps[(d.turn||0)%ps.length]?.[0];if(turnUid!==uid)return;
+ if(d.answers?.[i]?.[uid])return;
+ await set(ref(db,`rooms/${roomCode}/answers/${i}/${uid}`),{name:myName,text:textVal});
+ const updated=await get(ref(db,"rooms/"+roomCode));const latest=updated.val(),thisAnswers=latest.answers?.[i]||{};
+ if(Object.keys(thisAnswers).length>=2){
+   await update(ref(db,"rooms/"+roomCode),{index:i+1,turn:0});
+ }else{
+   const nextTurn=ps.findIndex(([id])=>id!==uid);await update(ref(db,"rooms/"+roomCode),{turn:Math.max(0,nextTurn)});
+ }
+ $("answer").value="";
+};
+window.leaveRoom=()=>{if(unsubscribe)unsubscribe();unsubscribe=null;roomCode=null;roomData=null;$("gamePanel").classList.add("hidden");$("lobby").classList.add("hidden");$("startPanel").classList.remove("hidden");};
+</script></body></html>
